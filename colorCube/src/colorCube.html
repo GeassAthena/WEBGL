@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>colorCube</title>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 a_Position;
+        attribute vec4 a_Color;
+        uniform mat4 u_Matrix;
+        uniform vec3 u_AmbientLight;
+        varying vec4 v_Color;
+        void main() {
+            gl_Position = u_Matrix * a_Position;
+            v_Color = a_Color;
+        }
+    </script>
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec4 v_Color;
+        void main() {
+            gl_FragColor = v_Color;
+        }
+    </script>
+</head>
+<body onload="main()">
+<canvas id="webgl" width=400px height=400px>你的浏览器不支持webgl</canvas>
+</body>
+<script type="text/javascript" src="colorCube.js"></script>
+<script type="text/javascript" src="config.js"></script>
+<script type="text/javascript" src="../lib/cuon-matrix.js"></script>
+<script type="text/javascript" src="../lib/cuon-utils.js"></script>
+<script type="text/javascript" src="../lib/webgl-utils.js"></script>
+<script type="text/javascript" src="../lib/webgl-debug.js"></script>
+</html>
