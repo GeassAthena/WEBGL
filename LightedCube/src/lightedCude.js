@@ -1,7 +1,7 @@
 const VSHADER_SOURCE = document.getElementById('vertex-shader').textContent;
 const FSHADER_SOURCE = document.getElementById('fragment-shader').textContent;
 let canvas = document.getElementById('webgl');
-let anglex = 0, angley = 0;
+let anglex = 30, angley = 30, step = 10;
 
 function main() {
     let gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -25,19 +25,19 @@ function main() {
         switch (ev.keyCode) {
             case 39:
             case 65:
-                anglex += 25.0;
+                anglex += step;
                 break;
             case 37:
             case 68:
-                anglex -= 25.0;
+                anglex -= step;
                 break;
             case 38:
             case 87:
-                angley += 25;
+                angley += step;
                 break;
             case 40:
             case 83:
-                angley -= 25;
+                angley -= step;
                 break;
             default:
                 break;
@@ -47,7 +47,8 @@ function main() {
 }
 
 function draw(gl, n) {
-    let u_Matrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
+    let u_NormalMatrix = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
+    let normalMatrix = new Matrix4();
     //得到光线颜色和光线向量的uniform变量
     let u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
     let u_LightDirection = gl.getUniformLocation(gl.program, 'u_LightDirection');
@@ -57,21 +58,23 @@ function draw(gl, n) {
     let lightDirection = new Vector3([0.5, 3.0, 4.0]);
     lightDirection.normalize();
     gl.uniform3fv(u_LightDirection, lightDirection.elements);
-    //视图矩阵
-    let viewMatrix = new Matrix4();
-    viewMatrix.setLookAt(3, 3, 7, 0, 0, 0, 0, 1, 0);
+
     //模型矩阵
     let modelMatrix = new Matrix4();
-    modelMatrix.setRotate(anglex, 0, 0, 1);
-    modelMatrix.rotate(angley, 0, 1, 0)
-    modelMatrix.translate(0.0, 0.0, 0.0);
-    //投影矩阵
-    let projMatrix = new Matrix4();
-    projMatrix.setPerspective(30, 1, 1, 100);
-    //投影 * 视图 * 模型
-    let matrix = projMatrix.multiply(viewMatrix.multiply(modelMatrix));
-    gl.uniformMatrix4fv(u_Matrix, false, matrix.elements);
+    modelMatrix.setTranslate(0, 0.5, 0);
+    modelMatrix.rotate(anglex, 0, 0, 1);
+    modelMatrix.rotate(angley, 0, 1, 0);
+    //视图投影矩阵
+    let u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
+    let mvpMatrix = new Matrix4();
+    mvpMatrix.setPerspective(30, 1, 1, 100);
+    mvpMatrix.lookAt(3, 3, 7, 0, 0, 0, 0, 1, 0);
+    mvpMatrix.multiply(modelMatrix);
+    gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
 
+    normalMatrix.setInverseOf(modelMatrix);
+    normalMatrix.transpose();
+    gl.uniformMatrix4fv(u_NormalMatrix, false, normalMatrix.elements);
     //清除颜色缓冲区和深度缓冲区
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.drawElements(gl.TRIANGLE_STRIP, n, gl.UNSIGNED_BYTE, 0);

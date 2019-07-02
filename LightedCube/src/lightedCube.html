@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>平行光下的漫反射</title>
+    <title>运动物体的光照</title>
     <script id="vertex-shader" type="x-shader/x-vertex">
         attribute vec4 a_Position;
         attribute vec4 a_Color;
         attribute vec4 a_Normal;  //法向量
+        uniform mat4 u_NormalMatrix; //用于法向量变换的矩阵
         uniform vec3 u_LightColor;  //光线颜色
         uniform vec3 u_LightDirection; //归一化的世界坐标
         uniform mat4 u_MvpMatrix;
@@ -15,7 +16,7 @@
         void main() {
             gl_Position = u_MvpMatrix * a_Position;
             //对法向量进行归一化
-            vec3 normal = normalize(vec3(a_Normal));
+            vec3 normal = normalize(vec3(u_NormalMatrix * a_Normal));
             //计算光线向量与法向量的点积
             float nDotL = max(dot(u_LightDirection, normal), 0.0);
             //计算漫反射光的颜色 光线颜色 * 表面基底色 * （光线向量 * 法向量）
